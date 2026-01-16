@@ -10,12 +10,47 @@
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
+        .gradient-bg-alt {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
         .login-container {
             animation: fadeIn 0.8s ease-out;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-active {
+            color: #7c3aed !important;
+            border-bottom-color: #7c3aed !important;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        @media (max-width: 768px) {
+            input, select, button {
+                font-size: 16px !important;
+            }
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -27,117 +62,308 @@
                 <i class="fas fa-shield-alt text-white text-5xl"></i>
             </div>
             <h1 class="text-4xl font-black text-gray-800 mb-2">
-                QR <span class="text-purple-600">GATE</span>
+                QR <span class="text-purple-600">GATE</span> <span class="text-sm text-amber-600">SKOOL</span>
             </h1>
             <p class="text-gray-600">Sistema de Control de Acceso</p>
         </div>
 
-        <!-- Formulario de Login -->
-        <div class="bg-white rounded-2xl shadow-xl p-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
-                <i class="fas fa-sign-in-alt mr-2 text-purple-500"></i>
-                Iniciar Sesión
-            </h2>
-
-            <!-- Selector de Rol -->
-            <div class="mb-6">
-                <label class="block text-gray-700 font-semibold mb-3">Selecciona tu rol:</label>
-                <div class="grid grid-cols-2 gap-3" id="roleSelector">
-                    <button onclick="selectRole('Director')" class="role-btn p-4 rounded-xl border-2 border-gray-200 hover:border-purple-400 transition text-center">
-                        <i class="fas fa-user-tie text-2xl text-blue-500 mb-2"></i>
-                        <div class="font-medium">Director</div>
-                    </button>
-                    <button onclick="selectRole('Docente')" class="role-btn p-4 rounded-xl border-2 border-gray-200 hover:border-purple-400 transition text-center">
-                        <i class="fas fa-chalkboard-teacher text-2xl text-green-500 mb-2"></i>
-                        <div class="font-medium">Docente</div>
-                    </button>
-                    <button onclick="selectRole('Admin')" class="role-btn p-4 rounded-xl border-2 border-gray-200 hover:border-purple-400 transition text-center">
-                        <i class="fas fa-cogs text-2xl text-red-500 mb-2"></i>
-                        <div class="font-medium">Administrador</div>
-                    </button>
-                    <button onclick="selectRole('Monitor')" class="role-btn p-4 rounded-xl border-2 border-gray-200 hover:border-purple-400 transition text-center">
-                        <i class="fas fa-user-check text-2xl text-orange-500 mb-2"></i>
-                        <div class="font-medium">Monitor</div>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Campo de Email -->
-            <div class="mb-6">
-                <label class="block text-gray-700 font-semibold mb-2">
-                    <i class="fas fa-envelope mr-2 text-gray-400"></i>
-                    Email institucional
-                </label>
-                <div class="relative">
-                    <input type="email" id="email" 
-                           class="w-full p-4 pl-12 border-2 border-gray-200 rounded-xl focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition"
-                           placeholder="usuario@institucion.edu">
-                    <i class="fas fa-at absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                </div>
-            </div>
-
-            <!-- Campo de Contraseña -->
-            <div class="mb-8">
-                <label class="block text-gray-700 font-semibold mb-2">
-                    <i class="fas fa-lock mr-2 text-gray-400"></i>
-                    Contraseña
-                </label>
-                <div class="relative">
-                    <input type="password" id="password" 
-                           class="w-full p-4 pl-12 border-2 border-gray-200 rounded-xl focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition"
-                           placeholder="••••••••">
-                    <i class="fas fa-key absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                    <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                        <i class="fas fa-eye" id="eyeIcon"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Botón de Login -->
-            <button onclick="login()" 
-                    class="w-full gradient-bg text-white font-bold py-4 rounded-xl hover:opacity-90 transition-all duration-300 transform hover:scale-[1.02] shadow-lg">
-                <i class="fas fa-sign-in-alt mr-2"></i>
-                Iniciar Sesión
-            </button>
-
-            <!-- Demo Credentials -->
-            <div class="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-100">
-                <h4 class="font-semibold text-blue-800 mb-2">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    Credenciales de Prueba
-                </h4>
-                <p class="text-sm text-blue-600 mb-1">
-                    <span class="font-medium">Email:</span> cualquier@email.com
-                </p>
-                <p class="text-sm text-blue-600">
-                    <span class="font-medium">Contraseña:</span> cualquier (solo demo)
-                </p>
-                <button onclick="fillDemoCredentials()" class="mt-3 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 py-1 px-3 rounded">
-                    <i class="fas fa-magic mr-1"></i> Rellenar automáticamente
+        <!-- Contenedor Principal -->
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            
+            <!-- Pestañas Login/Registro -->
+            <div class="flex border-b border-gray-200">
+                <button onclick="showLogin()" id="tabLogin" 
+                        class="flex-1 py-4 text-center font-semibold text-purple-500 border-b-2 border-purple-500 transition tab-active">
+                    <i class="fas fa-sign-in-alt mr-2"></i>
+                    Iniciar Sesión
+                </button>
+                <button onclick="showRegister()" id="tabRegister" 
+                        class="flex-1 py-4 text-center font-semibold text-gray-400 border-b-2 border-transparent transition hover:text-gray-600">
+                    <i class="fas fa-user-plus mr-2"></i>
+                    Registrar Usuario
                 </button>
             </div>
 
-            <!-- Mensaje de Error -->
-            <div id="errorMessage" class="mt-4 p-3 bg-red-50 text-red-600 rounded-lg hidden">
-                <i class="fas fa-exclamation-triangle mr-2"></i>
-                <span id="errorText"></span>
+            <!-- ========== FORMULARIO LOGIN ========== -->
+            <div id="loginForm" class="p-8">
+                <!-- Selector de Rol -->
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-3">
+                        <i class="fas fa-user-tag mr-2 text-gray-400"></i>
+                        Selecciona tu rol:
+                    </label>
+                    <div class="grid grid-cols-2 gap-3" id="roleSelector">
+                        <button onclick="selectRole('Director')" class="role-btn p-4 rounded-xl border-2 border-gray-200 hover:border-purple-400 transition text-center">
+                            <i class="fas fa-user-tie text-2xl text-blue-500 mb-2"></i>
+                            <div class="font-medium">Director</div>
+                        </button>
+                        <button onclick="selectRole('Docente')" class="role-btn p-4 rounded-xl border-2 border-gray-200 hover:border-purple-400 transition text-center">
+                            <i class="fas fa-chalkboard-teacher text-2xl text-green-500 mb-2"></i>
+                            <div class="font-medium">Docente</div>
+                        </button>
+                        <button onclick="selectRole('Tutor')" class="role-btn p-4 rounded-xl border-2 border-gray-200 hover:border-purple-400 transition text-center">
+                            <i class="fas fa-user-friends text-2xl text-amber-500 mb-2"></i>
+                            <div class="font-medium">Tutor</div>
+                        </button>
+                        <button onclick="selectRole('Alumno')" class="role-btn p-4 rounded-xl border-2 border-gray-200 hover:border-purple-400 transition text-center">
+                            <i class="fas fa-user-graduate text-2xl text-indigo-500 mb-2"></i>
+                            <div class="font-medium">Alumno</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Campo de Email -->
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-envelope mr-2 text-gray-400"></i>
+                        Email institucional
+                    </label>
+                    <div class="relative">
+                        <input type="email" id="loginEmail" 
+                               class="w-full p-4 pl-12 border-2 border-gray-200 rounded-xl focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition"
+                               placeholder="usuario@institucion.edu">
+                        <i class="fas fa-at absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Campo de Contraseña -->
+                <div class="mb-8">
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-lock mr-2 text-gray-400"></i>
+                        Contraseña
+                    </label>
+                    <div class="relative">
+                        <input type="password" id="loginPassword" 
+                               class="w-full p-4 pl-12 border-2 border-gray-200 rounded-xl focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition"
+                               placeholder="••••••••">
+                        <i class="fas fa-key absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <button type="button" onclick="toggleLoginPassword()" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-500">
+                            <i class="fas fa-eye" id="loginEyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Botón de Login -->
+                <button onclick="login()" 
+                        class="w-full gradient-bg text-white font-bold py-4 rounded-xl hover:opacity-90 transition-all duration-300 transform hover:scale-[1.02] shadow-lg mb-6">
+                    <i class="fas fa-sign-in-alt mr-2"></i>
+                    Iniciar Sesión
+                </button>
+
+                <!-- Demo Credentials -->
+                <div class="p-4 bg-blue-50 rounded-xl border border-blue-100">
+                    <h4 class="font-semibold text-blue-800 mb-2">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Credenciales de Prueba
+                    </h4>
+                    <p class="text-sm text-blue-600 mb-1">
+                        <span class="font-medium">Email:</span> concepto@demo.com
+                    </p>
+                    <p class="text-sm text-blue-600 mb-3">
+                        <span class="font-medium">Contraseña:</span> demo123
+                    </p>
+                    <button onclick="fillDemoCredentials()" class="w-full text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 py-2 px-3 rounded transition">
+                        <i class="fas fa-magic mr-1"></i> Rellenar automáticamente
+                    </button>
+                </div>
+            </div>
+
+            <!-- ========== FORMULARIO REGISTRO ========== -->
+            <div id="registerForm" class="p-8 hidden">
+                <!-- Nombre completo -->
+                <div class="mb-5">
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-user mr-2 text-gray-400"></i>
+                        Nombre completo
+                    </label>
+                    <input type="text" id="regNombre" placeholder="Juan Pérez García" 
+                           class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-100 transition">
+                </div>
+
+                <!-- Email -->
+                <div class="mb-5">
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-envelope mr-2 text-gray-400"></i>
+                        Email
+                    </label>
+                    <input type="email" id="regEmail" placeholder="usuario@institucion.edu" 
+                           class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-100 transition">
+                </div>
+
+                <!-- Rol -->
+                <div class="mb-5">
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-user-tag mr-2 text-gray-400"></i>
+                        Rol
+                    </label>
+                    <select id="regRol" class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-100 transition">
+                        <option value="Alumno">🎓 Alumno</option>
+                        <option value="Tutor">👨‍👦 Tutor</option>
+                        <option value="Docente">👩‍🏫 Docente</option>
+                        <option value="Director">👨‍🏫 Director</option>
+                        <option value="Administrador">💼 Administrador</option>
+                        <option value="Monitor">👁️ Monitor</option>
+                    </select>
+                </div>
+
+                <!-- Campos dinámicos -->
+                <div id="alumnoFields" class="mb-5 hidden">
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-graduation-cap mr-2 text-gray-400"></i>
+                        ID de Escuela (opcional)
+                    </label>
+                    <input type="text" id="regIdEscuela" placeholder="MAT123456" 
+                           class="w-full p-4 border-2 border-gray-200 rounded-xl">
+                </div>
+
+                <div id="tutorFields" class="mb-5 hidden">
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-phone mr-2 text-gray-400"></i>
+                        Teléfono (opcional)
+                    </label>
+                    <input type="tel" id="regTelefono" placeholder="+52 123 456 7890" 
+                           class="w-full p-4 border-2 border-gray-200 rounded-xl">
+                </div>
+
+                <!-- Contraseña -->
+                <div class="mb-5">
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-lock mr-2 text-gray-400"></i>
+                        Contraseña
+                    </label>
+                    <div class="relative">
+                        <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres" 
+                               class="w-full p-4 pl-12 border-2 border-gray-200 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-100 transition">
+                        <i class="fas fa-key absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Confirmar Contraseña -->
+                <div class="mb-8">
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-lock mr-2 text-gray-400"></i>
+                        Confirmar contraseña
+                    </label>
+                    <div class="relative">
+                        <input type="password" id="regPasswordConfirm" placeholder="Repite tu contraseña" 
+                               class="w-full p-4 pl-12 border-2 border-gray-200 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-100 transition">
+                        <i class="fas fa-redo absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Botón de Registro -->
+                <button onclick="registrarUsuario()" 
+                        class="w-full gradient-bg-alt text-white font-bold py-4 rounded-xl hover:opacity-90 transition-all duration-300 transform hover:scale-[1.02] shadow-lg">
+                    <i class="fas fa-user-plus mr-2"></i>
+                    Registrar Usuario
+                </button>
+
+                <!-- Info registro -->
+                <div class="mt-6 p-4 bg-green-50 rounded-xl border border-green-100">
+                    <h4 class="font-semibold text-green-800 mb-2">
+                        <i class="fas fa-lightbulb mr-2"></i>
+                        Información importante
+                    </h4>
+                    <ul class="text-sm text-green-600 space-y-1">
+                        <li>• El email debe ser único en el sistema</li>
+                        <li>• La contraseña debe tener mínimo 6 caracteres</li>
+                        <li>• Los tutores pueden vincularse con alumnos después</li>
+                        <li>• Los directores tienen acceso completo al sistema</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Mensaje de Error/Success -->
+            <div id="messageContainer" class="mx-8 mb-8 p-4 rounded-xl hidden">
+                <div class="flex items-start">
+                    <i class="fas text-xl mr-3 mt-0.5" id="messageIcon"></i>
+                    <div>
+                        <h4 class="font-semibold mb-1" id="messageTitle"></h4>
+                        <p class="text-sm" id="messageText"></p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Footer -->
-        <div class="mt-8 text-center text-gray-500 text-sm">
-            <p>© 2024 QR Gate Skool - Solo para uso autorizado</p>
-            <p class="mt-1">
-                <i class="fas fa-shield-alt mr-1"></i>
-                Sistema seguro | 
-                <i class="fas fa-user-check ml-3 mr-1"></i>
-                Autenticación protegida
-            </p>
+        <!-- Footer con Branding -->
+        <div class="mt-8 text-center">
+            <div class="inline-flex flex-col items-center gap-4">
+                <!-- Branding Conceptos AI MX -->
+                <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-4 px-6 shadow-lg">
+                    <div class="flex items-center justify-center gap-3">
+                        <div class="text-right">
+                            <div class="text-sm font-bold tracking-wider">
+                                <span class="text-blue-400">🤖 conceptos</span>
+                                <span class="text-emerald-400">Ai</span>
+                                <span class="text-white">MX</span>
+                            </div>
+                            <div class="text-xs text-slate-300 mt-1">
+                                Soluciones Tecnológicas Educativas
+                            </div>
+                        </div>
+                        <div class="h-8 w-px bg-slate-600"></div>
+                        <div class="text-left">
+                            <div class="text-sm font-semibold">
+                                <span class="text-slate-300">Panuco Ver.</span>
+                                <span class="text-amber-400 ml-1">2026</span>
+                            </div>
+                            <div class="text-xs text-slate-400 mt-1">
+                                v2.1.0 | Sistema Profesional
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Badges de seguridad -->
+                <div class="flex flex-wrap justify-center gap-2">
+                    <span class="badge bg-blue-900/10 text-blue-700 border border-blue-700/30">
+                        <i class="fas fa-shield-alt"></i> Sistema seguro
+                    </span>
+                    <span class="badge bg-emerald-900/10 text-emerald-700 border border-emerald-700/30">
+                        <i class="fas fa-user-check"></i> Autenticación protegida
+                    </span>
+                    <span class="badge bg-purple-900/10 text-purple-700 border border-purple-700/30">
+                        <i class="fas fa-mobile-alt"></i> Responsive
+                    </span>
+                </div>
+
+                <!-- Copyright -->
+                <div class="text-xs text-slate-500">
+                    <p>© 2024-2026 QR Gate Skool - Solo para uso autorizado</p>
+                    <p class="mt-1 text-slate-400">
+                        <i class="fas fa-code mr-1"></i>
+                        Desarrollado con 
+                        <i class="fas fa-heart text-red-400 mx-1"></i>
+                        para instituciones educativas
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
+        // ========== VARIABLES GLOBALES ==========
         let selectedRole = 'Director';
+        const API_URL = "https://script.google.com/macros/s/AKfycby_xXmHhZahNqal.g3xtu2PTF/exec";
+
+        // ========== FUNCIONES DE INTERFAZ ==========
+        function showLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('tabLogin').classList.add('tab-active', 'text-purple-500', 'border-purple-500');
+            document.getElementById('tabLogin').classList.remove('text-gray-400', 'border-transparent');
+            document.getElementById('tabRegister').classList.remove('tab-active', 'text-purple-500', 'border-purple-500');
+            document.getElementById('tabRegister').classList.add('text-gray-400', 'border-transparent');
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+            document.getElementById('tabRegister').classList.add('tab-active', 'text-purple-500', 'border-purple-500');
+            document.getElementById('tabRegister').classList.remove('text-gray-400', 'border-transparent');
+            document.getElementById('tabLogin').classList.remove('tab-active', 'text-purple-500', 'border-purple-500');
+            document.getElementById('tabLogin').classList.add('text-gray-400', 'border-transparent');
+        }
 
         function selectRole(role) {
             selectedRole = role;
@@ -151,13 +377,11 @@
             // Highlight selected
             event.currentTarget.classList.remove('border-gray-200');
             event.currentTarget.classList.add('border-purple-500', 'bg-purple-50');
-            
-            console.log(`Rol seleccionado: ${role}`);
         }
 
-        function togglePassword() {
-            const passwordField = document.getElementById('password');
-            const eyeIcon = document.getElementById('eyeIcon');
+        function toggleLoginPassword() {
+            const passwordField = document.getElementById('loginPassword');
+            const eyeIcon = document.getElementById('loginEyeIcon');
             
             if (passwordField.type === 'password') {
                 passwordField.type = 'text';
@@ -170,99 +394,311 @@
             }
         }
 
+        // ========== FUNCIONES DE REGISTRO ==========
+        document.getElementById('regRol').addEventListener('change', function() {
+            const rol = this.value;
+            document.getElementById('alumnoFields').classList.add('hidden');
+            document.getElementById('tutorFields').classList.add('hidden');
+            
+            if (rol === 'Alumno') {
+                document.getElementById('alumnoFields').classList.remove('hidden');
+            } else if (rol === 'Tutor') {
+                document.getElementById('tutorFields').classList.remove('hidden');
+            }
+        });
+
+        async function registrarUsuario() {
+            const nombre = document.getElementById('regNombre').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const rol = document.getElementById('regRol').value;
+            const password = document.getElementById('regPassword').value;
+            const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+            const idEscuela = document.getElementById('regIdEscuela')?.value.trim() || '';
+            const telefono = document.getElementById('regTelefono')?.value.trim() || '';
+            
+            // Validaciones
+            if (!nombre || nombre.length < 3) {
+                showMessage('❌ Nombre inválido', 'El nombre debe tener al menos 3 caracteres', 'error');
+                document.getElementById('regNombre').classList.add('shake');
+                setTimeout(() => document.getElementById('regNombre').classList.remove('shake'), 500);
+                return;
+            }
+            
+            if (!email || !email.includes('@')) {
+                showMessage('❌ Email inválido', 'Ingresa un email válido', 'error');
+                document.getElementById('regEmail').classList.add('shake');
+                setTimeout(() => document.getElementById('regEmail').classList.remove('shake'), 500);
+                return;
+            }
+            
+            if (!password || password.length < 6) {
+                showMessage('❌ Contraseña inválida', 'La contraseña debe tener al menos 6 caracteres', 'error');
+                document.getElementById('regPassword').classList.add('shake');
+                setTimeout(() => document.getElementById('regPassword').classList.remove('shake'), 500);
+                return;
+            }
+            
+            if (password !== passwordConfirm) {
+                showMessage('❌ Contraseñas no coinciden', 'Las contraseñas deben ser iguales', 'error');
+                document.getElementById('regPasswordConfirm').classList.add('shake');
+                setTimeout(() => document.getElementById('regPasswordConfirm').classList.remove('shake'), 500);
+                return;
+            }
+            
+            try {
+                // Mostrar loading
+                const btn = event.target;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Registrando...';
+                btn.disabled = true;
+                
+                // Preparar datos para API
+                const datos = {
+                    action: 'register',
+                    nombre: nombre,
+                    email: email,
+                    rol: rol,
+                    password: password
+                };
+                
+                // Agregar campos opcionales
+                if (rol === 'Alumno' && idEscuela) {
+                    datos.idDirectorIngresado = idEscuela;
+                }
+                
+                if (rol === 'Tutor' && telefono) {
+                    datos.telefono = telefono;
+                }
+                
+                // Enviar registro
+                const url = `${API_URL}?${new URLSearchParams(datos).toString()}`;
+                const response = await fetch(url, { method: 'GET', mode: 'cors' });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showMessage('✅ Registro exitoso', 
+                        `Usuario <strong>${nombre}</strong> registrado como <strong>${rol}</strong>.<br>Ahora puedes iniciar sesión.`, 
+                        'success');
+                    
+                    // Limpiar formulario
+                    document.getElementById('regNombre').value = '';
+                    document.getElementById('regEmail').value = '';
+                    document.getElementById('regPassword').value = '';
+                    document.getElementById('regPasswordConfirm').value = '';
+                    
+                    // Volver a login después de 3 segundos
+                    setTimeout(() => {
+                        showLogin();
+                        showMessage('✅ ¡Listo!', 'Ahora puedes iniciar sesión con tus credenciales', 'success');
+                    }, 3000);
+                    
+                } else {
+                    showMessage('❌ Error en registro', result.message || 'Error desconocido en el servidor', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error registro:', error);
+                showMessage('❌ Error de conexión', 
+                    'No se pudo conectar con el servidor. Verifica tu conexión a internet.', 
+                    'error');
+                
+            } finally {
+                // Restaurar botón
+                const btn = event.target;
+                btn.innerHTML = '<i class="fas fa-user-plus mr-2"></i> Registrar Usuario';
+                btn.disabled = false;
+            }
+        }
+
+        // ========== FUNCIONES DE LOGIN ==========
         function fillDemoCredentials() {
-            document.getElementById('email').value = 'director@escuela.edu';
-            document.getElementById('password').value = 'demo123';
+            document.getElementById('loginEmail').value = 'conceptosaimx@gmail.com';
+            document.getElementById('loginPassword').value = 'demo123';
             selectRole('Director');
             
             // Highlight Director button
             document.querySelectorAll('.role-btn')[0].click();
             
-            showMessage('Credenciales de prueba cargadas', 'success');
+            showMessage('✅ Credenciales demo cargadas', 
+                'Email: conceptosaimx@gmail.com | Contraseña: demo123 | Rol: Director', 
+                'success');
         }
 
-        function showMessage(message, type) {
-            const errorDiv = document.getElementById('errorMessage');
-            const errorText = document.getElementById('errorText');
+        function showMessage(title, text, type) {
+            const container = document.getElementById('messageContainer');
+            const icon = document.getElementById('messageIcon');
+            const messageTitle = document.getElementById('messageTitle');
+            const messageText = document.getElementById('messageText');
             
-            errorText.textContent = message;
-            errorDiv.className = `mt-4 p-3 rounded-lg ${type === 'error' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`;
-            errorDiv.classList.remove('hidden');
+            // Configurar según tipo
+            if (type === 'error') {
+                container.className = 'mx-8 mb-8 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700';
+                icon.className = 'fas fa-exclamation-triangle text-red-500';
+            } else if (type === 'success') {
+                container.className = 'mx-8 mb-8 p-4 rounded-xl bg-green-50 border border-green-200 text-green-700';
+                icon.className = 'fas fa-check-circle text-green-500';
+            } else {
+                container.className = 'mx-8 mb-8 p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-700';
+                icon.className = 'fas fa-info-circle text-blue-500';
+            }
             
+            messageTitle.innerHTML = title;
+            messageText.innerHTML = text;
+            container.classList.remove('hidden');
+            
+            // Auto-ocultar después de 5 segundos
             setTimeout(() => {
-                errorDiv.classList.add('hidden');
+                container.classList.add('hidden');
             }, 5000);
         }
 
-        function login() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
+        async function login() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
             
             // Validaciones básicas
             if (!email) {
-                showMessage('Por favor ingresa tu email', 'error');
+                showMessage('❌ Email requerido', 'Por favor ingresa tu email institucional', 'error');
+                document.getElementById('loginEmail').classList.add('shake');
+                setTimeout(() => document.getElementById('loginEmail').classList.remove('shake'), 500);
                 return;
             }
             
             if (!password) {
-                showMessage('Por favor ingresa tu contraseña', 'error');
+                showMessage('❌ Contraseña requerida', 'Por favor ingresa tu contraseña', 'error');
+                document.getElementById('loginPassword').classList.add('shake');
+                setTimeout(() => document.getElementById('loginPassword').classList.remove('shake'), 500);
                 return;
             }
             
-            // En un sistema real, aquí se validaría contra un servidor
-            // Por ahora, simulamos login exitoso
-            
-            const userData = {
-                nombre: getRandomName(),
-                email: email,
-                rol: selectedRole,
-                id: Date.now().toString(),
-                fechaLogin: new Date().toISOString()
-            };
-            
-            // Guardar sesión
-            localStorage.setItem('userSession', JSON.stringify(userData));
-            
-            // Mostrar mensaje de éxito
-            showMessage(`¡Bienvenido ${userData.nombre}! Redirigiendo...`, 'success');
-            
-            // Redirigir después de 1.5 segundos
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1500);
+            try {
+                // Mostrar loading
+                const btn = event.target;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Iniciando sesión...';
+                btn.disabled = true;
+                
+                // Enviar login a API
+                const url = `${API_URL}?action=login&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
+                const response = await fetch(url, { method: 'GET', mode: 'cors' });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    // Guardar sesión
+                    const userData = {
+                        nombre: result.user.nombre || getRandomName(),
+                        email: result.user.email || email,
+                        rol: result.user.rol || selectedRole,
+                        id: Date.now().toString(),
+                        fechaLogin: new Date().toISOString(),
+                        idEscuela: result.user.idEscuela || ''
+                    };
+                    
+                    localStorage.setItem('userSession', JSON.stringify(userData));
+                    
+                    showMessage('✅ ¡Bienvenido!', 
+                        `Hola <strong>${userData.nombre}</strong>, redirigiendo al sistema...`, 
+                        'success');
+                    
+                    // Redirigir según rol
+                    setTimeout(() => {
+                        if (userData.rol === 'Director' || userData.rol === 'Administrador') {
+                            window.location.href = 'dashboard.html';
+                        } else if (userData.rol === 'Tutor') {
+                            window.location.href = 'dashboard-tutor.html';
+                        } else if (userData.rol === 'Docente') {
+                            window.location.href = 'dashboard-docente.html';
+                        } else {
+                            window.location.href = 'dashboard-alumno.html';
+                        }
+                    }, 2000);
+                    
+                } else {
+                    showMessage('❌ Credenciales incorrectas', 
+                        'El email o contraseña son incorrectos. Verifica tus datos.', 
+                        'error');
+                }
+                
+            } catch (error) {
+                console.error('Error login:', error);
+                showMessage('❌ Error de conexión', 
+                    'No se pudo conectar con el servidor. Intenta nuevamente.', 
+                    'error');
+                
+                // Simulación de login exitoso para demo
+                if (email.includes('@')) {
+                    const userData = {
+                        nombre: getRandomName(),
+                        email: email,
+                        rol: selectedRole,
+                        id: Date.now().toString(),
+                        fechaLogin: new Date().toISOString()
+                    };
+                    
+                    localStorage.setItem('userSession', JSON.stringify(userData));
+                    
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                }
+                
+            } finally {
+                // Restaurar botón
+                const btn = event.target;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Iniciar Sesión';
+                btn.disabled = false;
+            }
         }
 
         function getRandomName() {
-            const names = [
-                'María García', 'Carlos Rodríguez', 'Ana Martínez', 'José López',
-                'Laura Fernández', 'Miguel Sánchez', 'Isabel Pérez', 'Francisco Gómez',
-                'Elena Díaz', 'Javier Ruiz', 'Carmen Torres', 'Antonio Vázquez',
-                'Patricia Ramos', 'David Gil', 'Sofía Ortega'
-            ];
-            
-            const roles = {
-                'Director': ['Dr. ', 'Dra. ', 'Director '],
-                'Docente': ['Prof. ', 'Profesora ', 'Maestro '],
-                'Admin': ['Admin ', 'Administrador '],
-                'Monitor': ['Monitor ', 'Asistente ']
+            const names = {
+                'Director': ['Dr. Francisco Gómez', 'Dra. María García', 'Director Carlos Rodríguez'],
+                'Docente': ['Prof. Ana Martínez', 'Profesora Laura Fernández', 'Maestro Miguel Sánchez'],
+                'Tutor': ['José López', 'Elena Díaz', 'Carmen Torres'],
+                'Alumno': ['Juan Pérez', 'Sofía Ortega', 'David Gil'],
+                'Administrador': ['Admin. Patricia Ramos', 'Sys. Javier Ruiz'],
+                'Monitor': ['Monitor Antonio Vázquez', 'Asistente Isabel Pérez']
             };
             
-            const prefix = roles[selectedRole] ? roles[selectedRole][Math.floor(Math.random() * roles[selectedRole].length)] : '';
-            const name = names[Math.floor(Math.random() * names.length)];
-            
-            return prefix + name;
+            const list = names[selectedRole] || ['Usuario Demo'];
+            return list[Math.floor(Math.random() * list.length)];
         }
 
-        // Auto-select first role on load
+        // ========== INICIALIZACIÓN ==========
         document.addEventListener('DOMContentLoaded', function() {
+            // Auto-select first role
             document.querySelectorAll('.role-btn')[0].click();
-        });
-
-        // Allow login with Enter key
-        document.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                login();
-            }
+            
+            // Mostrar login por defecto
+            showLogin();
+            
+            // Permitir login con Enter
+            document.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    if (document.getElementById('loginForm').classList.contains('hidden')) {
+                        registrarUsuario();
+                    } else {
+                        login();
+                    }
+                }
+            });
+            
+            // Mostrar mensaje de bienvenida
+            setTimeout(() => {
+                showMessage('👋 ¡Bienvenido a QR Gate Skool!', 
+                    'Sistema profesional de control de acceso para instituciones educativas', 
+                    'info');
+            }, 1000);
         });
     </script>
 </body>
