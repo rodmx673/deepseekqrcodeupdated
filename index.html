@@ -1,0 +1,185 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Gate Skool - Sistema de Acceso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .card-hover:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-12">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <div class="inline-block p-4 rounded-full gradient-bg mb-6">
+                <i class="fas fa-qrcode text-white text-5xl"></i>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-black text-gray-800 mb-4">
+                QR GATE <span class="text-purple-600">SKOOL</span>
+            </h1>
+            <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+                Sistema inteligente de control de acceso mediante QR para instituciones educativas
+            </p>
+        </div>
+
+        <!-- User Info -->
+        <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-6 mb-8">
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center">
+                    <i class="fas fa-user text-white text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800" id="userName">Cargando...</h2>
+                    <p class="text-gray-600" id="userRole">Rol: Cargando...</p>
+                    <p class="text-sm text-gray-500" id="userEmail"></p>
+                </div>
+            </div>
+            <button onclick="logout()" class="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl transition">
+                <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+            </button>
+        </div>
+
+        <!-- Dashboard Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            <!-- Card 1: Scanner -->
+            <a href="scanner.html" class="card-hover">
+                <div class="bg-white rounded-2xl shadow-lg p-8 text-center hover:shadow-xl transition-shadow duration-300 border border-gray-100">
+                    <div class="inline-block p-4 rounded-full bg-blue-100 mb-4">
+                        <i class="fas fa-camera text-blue-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">Escanear QR</h3>
+                    <p class="text-gray-600 mb-4">
+                        Usa la cámara para escanear credenciales QR de estudiantes y personal
+                    </p>
+                    <div class="text-blue-600 font-semibold">
+                        Acceso rápido <i class="fas fa-arrow-right ml-2"></i>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 2: Scanner con Debug -->
+            <a href="scanner-debug.html" class="card-hover">
+                <div class="bg-white rounded-2xl shadow-lg p-8 text-center hover:shadow-xl transition-shadow duration-300 border border-gray-100">
+                    <div class="inline-block p-4 rounded-full bg-green-100 mb-4">
+                        <i class="fas fa-bug text-green-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">Modo Debug</h3>
+                    <p class="text-gray-600 mb-4">
+                        Escáner avanzado con panel de depuración y monitoreo en tiempo real
+                    </p>
+                    <div class="text-green-600 font-semibold">
+                        Para desarrolladores <i class="fas fa-tools ml-2"></i>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 3: Dashboard -->
+            <a href="dashboard.html" class="card-hover">
+                <div class="bg-white rounded-2xl shadow-lg p-8 text-center hover:shadow-xl transition-shadow duration-300 border border-gray-100">
+                    <div class="inline-block p-4 rounded-full bg-purple-100 mb-4">
+                        <i class="fas fa-chart-bar text-purple-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">Dashboard</h3>
+                    <p class="text-gray-600 mb-4">
+                        Visualiza estadísticas, reportes y registros de acceso
+                    </p>
+                    <div class="text-purple-600 font-semibold">
+                        Ver reportes <i class="fas fa-chart-line ml-2"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Stats -->
+        <div class="mt-12 max-w-4xl mx-auto">
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">📊 Información del Sistema</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="text-center p-4 bg-blue-50 rounded-xl">
+                        <div class="text-3xl font-bold text-blue-600" id="statScans">0</div>
+                        <div class="text-sm text-gray-600">Escaneos Hoy</div>
+                    </div>
+                    <div class="text-center p-4 bg-green-50 rounded-xl">
+                        <div class="text-3xl font-bold text-green-600" id="statUsers">0</div>
+                        <div class="text-sm text-gray-600">Usuarios Activos</div>
+                    </div>
+                    <div class="text-center p-4 bg-purple-50 rounded-xl">
+                        <div class="text-3xl font-bold text-purple-600" id="statEntries">0</div>
+                        <div class="text-sm text-gray-600">Entradas</div>
+                    </div>
+                    <div class="text-center p-4 bg-orange-50 rounded-xl">
+                        <div class="text-3xl font-bold text-orange-600" id="statExits">0</div>
+                        <div class="text-sm text-gray-600">Salidas</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-12 text-center text-gray-500 text-sm">
+            <p>© 2024 QR Gate Skool - Sistema de Control de Acceso</p>
+            <p class="mt-2">
+                <i class="fas fa-shield-alt mr-2"></i>
+                Sistema seguro | 
+                <i class="fas fa-bolt ml-4 mr-2"></i>
+                Tiempo real | 
+                <i class="fas fa-mobile-alt ml-4 mr-2"></i>
+                Responsive
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Cargar información del usuario
+        document.addEventListener('DOMContentLoaded', function() {
+            const session = localStorage.getItem('userSession');
+            
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const user = JSON.parse(session);
+                document.getElementById('userName').textContent = user.nombre;
+                document.getElementById('userRole').textContent = `Rol: ${user.rol}`;
+                document.getElementById('userEmail').textContent = user.email || '';
+                
+                // Simular estadísticas (en producción esto vendría de una API)
+                document.getElementById('statScans').textContent = Math.floor(Math.random() * 100) + 50;
+                document.getElementById('statUsers').textContent = Math.floor(Math.random() * 500) + 100;
+                document.getElementById('statEntries').textContent = Math.floor(Math.random() * 200) + 80;
+                document.getElementById('statExits').textContent = Math.floor(Math.random() * 150) + 60;
+                
+            } catch (error) {
+                console.error('Error cargando sesión:', error);
+                localStorage.removeItem('userSession');
+                window.location.href = 'login.html';
+            }
+        });
+
+        function logout() {
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                localStorage.removeItem('userSession');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Demo data update
+        setInterval(() => {
+            const scans = document.getElementById('statScans');
+            const current = parseInt(scans.textContent);
+            scans.textContent = current + Math.floor(Math.random() * 3);
+        }, 10000);
+    </script>
+</body>
+</html>

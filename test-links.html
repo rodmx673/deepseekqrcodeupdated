@@ -1,0 +1,49 @@
+<!-- Guarda como test-links.html -->
+<!DOCTYPE html>
+<html>
+<head><title>Test Links QR Gate</title></head>
+<body>
+<h1>Enlaces de prueba QR Gate Skool</h1>
+
+<h2>1. Limpiar Sesión:</h2>
+<a href="javascript:localStorage.removeItem('userSession');alert('Sesión limpiada');location.href='index.html'">🔓 Limpiar Sesión e Ir al Inicio</a>
+
+<h2>2. Login Automático:</h2>
+<a href="login.html?auto=director">👨‍🏫 Login como DIRECTOR</a><br>
+<a href="login.html?auto=tutor">👨‍👦 Login como TUTOR</a><br>
+<a href="login.html?auto=alumno">👨‍🎓 Login como ALUMNO</a><br>
+<a href="login.html?auto=docente">👩‍🏫 Login como DOCENTE</a>
+
+<h2>3. Páginas Directas (requieren sesión):</h2>
+<a href="index.html">🏠 Página de Inicio</a><br>
+<a href="scanner.html">📷 Escáner QR</a><br>
+<a href="monitor-director.html">📊 Monitor Director</a><br>
+<a href="dashboard-tutor.html">👨‍👦 Dashboard Tutor</a><br>
+<a href="dashboard-alumno.html">👨‍🎓 Dashboard Alumno</a><br>
+<a href="dashboard-docente.html">👩‍🏫 Dashboard Docente</a>
+
+<h2>4. Usuarios de Prueba:</h2>
+<pre>
+DIRECTOR:
+  Email: newcoordinatorC
+  Password: mexico86
+
+TUTOR:
+  Email: newtutor03@gmail.com
+  Password: mexico86
+
+ALUMNO:
+  Email: ramonv@gmail.com
+  Password: mexico86
+
+DOCENTE (crear primero):
+  Email: testdocente@test.com
+  Password: test123
+</pre>
+
+<script>
+// Botón para limpiar todo
+document.write('<button onclick="localStorage.clear();sessionStorage.clear();alert(\'Todas las sesiones limpiadas\');location.reload()">🧹 Limpiar TODO</button>');
+</script>
+</body>
+</html>

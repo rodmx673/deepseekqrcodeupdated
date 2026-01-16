@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escáner QR - DEBUG MODE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        #reader { width: 100%; max-width: 500px; margin: 0 auto; }
+        .escaneando { 
+            animation: pulse 2s infinite;
+            position: relative;
+        }
+        .escaneando::after {
+            content: "⇣ ESCANEAR AQUÍ ⇣";
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #60a5fa;
+            font-size: 14px;
+            font-weight: bold;
+            animation: fadeInOut 3s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        #debugPanel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 320px;
+            background: rgba(15, 23, 42, 0.95);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+            font-size: 11px;
+            z-index: 1000;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid #334155;
+            backdrop-filter: blur(10px);
+        }
+        .debug-toggle {
+            position: fixed;
+            top: 10px;
+            left: 60px;
+            background: #1e293b;
+            color: #94a3b8;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        .success-pulse {
+            animation: successPulse 0.5s ease-in-out;
+        }
+        @keyframes successPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 to-slate-950 min-h-screen flex flex-col items-center justify-center p-4 text-white">
+    
+<!-- Botón para mostrar/ocultar debug -->
+<button onclick="toggleDebugPanel()" class="debug-toggle">🔧 DEBUG</button>
+
+<!-- Panel de Debug -->
+<div id="debugPanel" class="hidden">
+    <div class="flex justify-between items-center mb-3">
+        <h3 class="font-bold text-blue-300 flex items-center gap-2">
+            <span class="text-lg">⚙️</span> DEBUG MODE
+        </h3>
+        <div class="flex gap-1">
+            <button onclick="testConnection()" class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded transition" title="Probar conexión API">
+                Test API
+            </button>
+            <button onclick="clearDebugLog()" class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1 rounded transition" title="Limpiar registro">
+                Clear
+            </button>
+            <button onclick="toggleDebugPanel()" class="text-xs bg-slate-600 hover:bg-slate-700 px-3 py-1 rounded transition" title="Ocultar panel">
+                ×
+            </button>
+        </div>
+    </div>
+    
+    <div class="mb-3 p-2 bg-slate-800 rounded text-xs">
+        <div class="flex justify-between mb-1">
+            <span>Estado:</span>
+            <span id="debugStatus" class="text-emerald-400">● Conectado</span>
+        </div>
+        <div class="flex justify-between">
+            <span>Escaneos:</span>
+            <span id="scanCount">0</span>
+        </div>
+    </div>
+    
+    <div id="debugLog" class="space-y-1 max-h-96 overflow-y-auto pr-2"></div>
+    
+    <div class="mt-4 pt-3 border-t border-slate-700">
+        <p class="text-xs text-slate-400 mb-2">Comandos de consola:</p>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+            <code class="bg-slate-800 p-2 rounded">debugScan('email')</code>
+            <code class="bg-slate-800 p-2 rounded">showSession()</code>
+        </div>
+    </div>
+</div>
+
+<div class="text-center mb-8 animate-fade-in">
+    <div class="inline-block p-4 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-2xl mb-4">
+        <h1 class="text-4xl font-black bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent italic tracking-tight">
+            QR GATE SKOOL
+        </h1>
+    </div>
+    <p class="text-slate-300 mt-2 text-lg">Escanea la credencial para registrar acceso</p>
+    <p class="text-slate-500 text-sm mt-1">Modo: <span id="currentMode" class="text-blue-300 font-semibold">Producción</span></p>
+</div>
+
+<!-- Indicador de carga -->
+<div id="loadingIndicator" class="hidden mb-6">
+    <div class="flex flex-col items-center">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+        <p class="text-slate-400 mt-2 text-sm">Procesando...</p>
+    </div>
+</div>
+
+<div id="reader" class="rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/20 border-2 border-blue-400/50 escaneando"></div>
+
+<div id="resultado" class="mt-8 text-center max-w-md mx-auto hidden">
+    <div id="mensaje" class="mb-6"></div>
+    <button onclick="reiniciarEscaneo()" 
+            class="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold py-3 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg shadow-emerald-500/20">
+        ESCANEAR OTRO
+    </button>
+</div>
+
+<div class="fixed bottom-4 left-4 right-4 flex justify-center">
+    <div class="bg-slate-800/50 backdrop-blur-sm rounded-full p-2 flex items-center gap-4">
+        <a href="index.html" class="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-full transition" title="Volver al inicio">
+            ←
+        </a>
+        <button onclick="toggleCamera()" class="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-full transition" title="Cambiar cámara">
+            🔄
+        </button>
+        <button onclick="location.reload()" class="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-full transition" title="Reiniciar">
+            ⟳
+        </button>
+    </div>
+</div>
+
+<script>
+// ========== CONFIGURACIÓN Y VARIABLES GLOBALES ==========
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbymZkiBvIebJJ8qIhW9J5YpEL_kVWqJo3UwaLbqQdav-xXMHbH2ahWqaLg3xtw2PF7P/exec";
+let html5QrCode = null;
+let currentCamera = "environment";
+let scanCounter = 0;
+let isProcessing = false;
+
+// ========== FUNCIONES DE DEBUG ==========
+function toggleDebugPanel() {
+    const panel = document.getElementById('debugPanel');
+    panel.classList.toggle('hidden');
+}
+
+function debugLog(message, type = 'info') {
+    const logDiv = document.getElementById('debugLog');
+    const timestamp = new Date().toLocaleTimeString('es-ES', { 
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        fractionalSecondDigits: 3 
+    });
+    
+    const colors = {
+        'error': 'text-red-300 bg-red-900/20 border-l-4 border-red-500 pl-2',
+        'success': 'text-emerald-300 bg-emerald-900/20 border-l-4 border-emerald-500 pl-2',
+        'warning': 'text-yellow-300 bg-yellow-900/20 border-l-4 border-yellow-500 pl-2',
+        'info': 'text-blue-300 bg-blue-900/20 border-l-4 border-blue-500 pl-2'
+    };
+    
+    const colorClass = colors[type] || colors.info;
+    
+    const logEntry = `
+        <div class="p-2 rounded ${colorClass} mb-2 animate-pulse-once">
+            <div class="flex justify-between items-start">
+                <span class="font-medium">${message}</span>
+                <span class="text-xs opacity-70 ml-2">${timestamp}</span>
+            </div>
+        </div>
+    `;
+    
+    logDiv.innerHTML = logEntry + logDiv.innerHTML;
+    
+    // Limitar cantidad de logs
+    const logs = logDiv.querySelectorAll('div');
+    if (logs.length > 20) {
+        logs[logs.length - 1].remove();
+    }
+    
+    // Actualizar contador
+    if (message.includes('QR escaneado')) {
+        scanCounter++;
+        document.getElementById('scanCount').textContent = scanCounter;
+    }
+    
+    console.log(`[${type.toUpperCase()}] ${message}`);
+}
+
+function clearDebugLog() {
+    document.getElementById('debugLog').innerHTML = '';
+    debugLog('Log limpiado', 'info');
+}
+
+async function testConnection() {
+    debugLog('Iniciando prueba de conexión API...', 'info');
+    
+    try {
+        const testStart = Date.now();
+        const res = await fetch(`${SCRIPT_URL}?action=ping&_test=${testStart}`, {
+            method: 'GET',
+            mode: 'cors',
+            cache: 'no-cache'
+        });
+        
+        const latency = Date.now() - testStart;
+        
+        if (!res.ok) {
+            debugLog(`Error HTTP: ${res.status} ${res.statusText}`, 'error');
+            document.getElementById('debugStatus').className = 'text-red-400';
+            document.getElementById('debugStatus').textContent = '✗ Error de conexión';
+            return;
+        }
+        
+        const data = await res.json();
+        
+        if (data.status === 'success') {
+            debugLog(`✅ API conectada - Latencia: ${latency}ms`, 'success');
+            debugLog(`Mensaje: ${data.message}`, 'success');
+            document.getElementById('debugStatus').className = 'text-emerald-400 animate-pulse';
+            document.getElementById('debugStatus').textContent = '● Conectado';
+            
+            setTimeout(() => {
+                document.getElementById('debugStatus').className = 'text-emerald-400';
+            }, 2000);
+        } else {
+            debugLog(`API responde pero con error: ${data.message}`, 'warning');
+        }
+        
+    } catch (error) {
+        debugLog(`❌ Error de conexión: ${error.message}`, 'error');
+        document.getElementById('debugStatus').className = 'text-red-400';
+        document.getElementById('debugStatus').textContent = '✗ Sin conexión';
+    }
+}
+
+// ========== MANEJO DE CÁMARA ==========
+async function toggleCamera() {
+    if (!html5QrCode) return;
+    
+    try {
+        currentCamera = currentCamera === "environment" ? "user" : "environment";
+        debugLog(`Cambiando a cámara: ${currentCamera === "environment" ? "Trasera" : "Frontal"}`, 'info');
+        
+        await html5QrCode.stop();
+        await iniciarEscaneo();
+        
+    } catch (error) {
+        debugLog(`Error cambiando cámara: ${error.message}`, 'error');
+    }
+}
+
+// ========== FUNCIONES DE ESCANEO ==========
+function onScanSuccess(decodedText) {
+    if (isProcessing) {
+        debugLog('⏭️ Scan ignorado - Procesamiento en curso', 'warning');
+        return;
+    }
+    
+    isProcessing = true;
+    scanCounter++;
+    document.getElementById('scanCount').textContent = scanCounter;
+    
+    debugLog(`📷 QR #${scanCounter} detectado: ${decodedText.substring(0, 50)}${decodedText.length > 50 ? '...' : ''}`, 'success');
+    
+    // Mostrar indicador de carga
+    document.getElementById('loadingIndicator').classList.remove('hidden');
+    
+    // Pausar el escáner (no detener)
+    if (html5QrCode) {
+        html5QrCode.pause();
+        debugLog('⏸️ Escáner pausado temporalmente');
+    }
+    
+    // Pequeño delay para feedback visual
+    setTimeout(() => {
+        procesarQR(decodedText.trim());
+    }, 300);
+}
+
+async function procesarQR(email) {
+    debugLog(`📧 Procesando: ${email}`, 'info');
+    
+    // Validación básica
+    if (!email || !email.includes('@') || email.length > 100) {
+        debugLog('Formato de email inválido', 'error');
+        mostrarResultadoError('Formato de código QR inválido', 'El código no contiene un email válido');
+        reanudarEscaneo();
+        return;
+    }
+    
+    try {
+        // Preparar petición
+        const params = new URLSearchParams({
+            action: 'scan',
+            email: email,
+            timestamp: Date.now(),
+            source: 'qr_scanner',
+            scan_id: scanCounter
+        });
+        
+        const url = `${SCRIPT_URL}?${params.toString()}`;
+        debugLog(`Enviando a: ${url.substring(0, 80)}...`, 'info');
+        
+        // Timeout de 10 segundos
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        
+        const res = await fetch(url, {
+            method: 'GET',
+            mode: 'cors',
+            cache: 'no-cache',
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        const responseTime = Date.now();
+        debugLog(`Respuesta recibida en ${responseTime}ms`, 'info');
+        
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
+        const data = await res.json();
+        
+        // Ocultar indicador de carga
+        document.getElementById('loadingIndicator').classList.add('hidden');
+        
+        if (data.status === 'success') {
+            debugLog(`✅ Registro exitoso: ${data.nombre} (${data.tipo})`, 'success');
+            mostrarResultadoExitoso(data);
+            
+            // Auto-reinicio después de 4 segundos
+            setTimeout(() => {
+                reiniciarEscaneo();
+            }, 4000);
+            
+        } else {
+            debugLog(`❌ Error del servidor: ${data.message}`, 'error');
+            mostrarResultadoError('Error en registro', data.message || 'No se pudo procesar el acceso');
+            setTimeout(() => {
+                reiniciarEscaneo();
+            }, 3000);
+        }
+        
+    } catch (error) {
+        debugLog(`💥 Error de conexión: ${error.message}`, 'error');
+        
+        // Ocultar indicador de carga
+        document.getElementById('loadingIndicator').classList.add('hidden');
+        
+        let errorMessage = 'Error de conexión con el servidor';
+        if (error.name === 'AbortError') {
+            errorMessage = 'Tiempo de espera agotado';
+        } else if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+            errorMessage = 'Error de CORS - Verifica la conexión';
+        }
+        
+        mostrarResultadoError('Error de conexión', errorMessage);
+        
+        // Reanudar después de 3 segundos
+        setTimeout(() => {
+            reiniciarEscaneo();
+        }, 3000);
+    }
+}
+
+// ========== FUNCIONES DE REANUDACIÓN ==========
+function reanudarEscaneo() {
+    if (html5QrCode) {
+        html5QrCode.resume().then(() => {
+            debugLog('▶️ Escáner reanudado');
+            document.getElementById('loadingIndicator').classList.add('hidden');
+            isProcessing = false;
+        }).catch(err => {
+            debugLog(`❌ Error reanudando escáner: ${err.message}`, 'error');
+            // Si falla al reanudar, reiniciar completamente
+            iniciarEscaneo();
+        });
+    } else {
+        // Si no está inicializado, iniciar
+        iniciarEscaneo();
+    }
+}
+
+function reiniciarEscaneo() {
+    debugLog('🔄 Reanudando escáner...');
+    document.getElementById('resultado').classList.add('hidden');
+    reanudarEscaneo();
+}
+
+// ========== FUNCIONES DE UI ==========
+function mostrarResultadoExitoso(data) {
+    const icono = data.tipo === 'Entrada' ? '✅' : '🚪';
+    const colorClass = data.tipo === 'Entrada' ? 'from-emerald-500 to-green-500' : 'from-orange-500 to-amber-500';
+    const bgClass = data.tipo === 'Entrada' ? 'bg-gradient-to-br from-emerald-900/30 to-green-900/20' : 'bg-gradient-to-br from-orange-900/30 to-amber-900/20';
+    
+    const html = `
+        <div class="${bgClass} p-6 rounded-2xl border-2 border-white/10 shadow-2xl success-pulse">
+            <div class="text-6xl mb-4">${icono}</div>
+            <div class="text-3xl font-black mb-2 bg-gradient-to-r ${colorClass} bg-clip-text text-transparent">
+                ${data.tipo.toUpperCase()}
+            </div>
+            <div class="text-xl font-bold text-white mb-1">${data.nombre}</div>
+            <div class="text-sm text-slate-300 mb-4">${data.email}</div>
+            <div class="text-xs text-slate-400 bg-black/20 p-2 rounded">
+                📅 ${data.fecha} • 🕐 ${data.hora}
+            </div>
+            <div class="text-xs text-slate-500 mt-3 italic">${data.message || 'Registro completado'}</div>
+        </div>
+    `;
+    
+    document.getElementById('mensaje').innerHTML = html;
+    document.getElementById('resultado').classList.remove('hidden');
+}
+
+function mostrarResultadoError(titulo, mensaje) {
+    const html = `
+        <div class="bg-gradient-to-br from-red-900/30 to-rose-900/20 p-6 rounded-2xl border-2 border-red-400/50">
+            <div class="text-5xl mb-4">❌</div>
+            <div class="text-2xl font-bold text-red-300 mb-2">${titulo}</div>
+            <div class="text-white mb-4">${mensaje}</div>
+            <div class="text-sm text-slate-300">Intenta escanear nuevamente en unos segundos</div>
+        </div>
+    `;
+    
+    document.getElementById('mensaje').innerHTML = html;
+    document.getElementById('resultado').classList.remove('hidden');
+}
+
+async function iniciarEscaneo() {
+    debugLog('Inicializando escáner QR...', 'info');
+    
+    if (html5QrCode && html5QrCode.isScanning) {
+        await html5QrCode.stop();
+    }
+    
+    const config = { 
+        fps: 15,
+        qrbox: { width: 280, height: 280 },
+        rememberLastUsedCamera: true,
+        showTorchButtonIfSupported: true,
+        showZoomSliderIfSupported: true,
+        defaultZoomValueIfSupported: 1.5
+    };
+    
+    html5QrCode = new Html5Qrcode("reader");
+    
+    try {
+        const cameras = await Html5Qrcode.getCameras();
+        debugLog(`Cámaras disponibles: ${cameras.length}`, 'info');
+        
+        if (cameras.length === 0) {
+            throw new Error('No se encontraron cámaras');
+        }
+        
+        const cameraId = cameras.find(cam => 
+            cam.label.toLowerCase().includes('back') || 
+            cam.label.toLowerCase().includes('rear')
+        )?.id || cameras[0].id;
+        
+        await html5QrCode.start(
+            currentCamera === "environment" ? cameraId : { facingMode: "user" },
+            config,
+            onScanSuccess,
+            () => {} // Error callback silencioso
+        );
+        
+        debugLog('✅ Escáner iniciado correctamente', 'success');
+        
+    } catch (error) {
+        debugLog(`❌ Error iniciando escáner: ${error.message}`, 'error');
+        
+        document.getElementById('reader').innerHTML = `
+            <div class="p-8 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border-2 border-red-500/30 text-center">
+                <div class="text-5xl mb-4">📷</div>
+                <h3 class="text-xl font-bold text-red-300 mb-3">Error de Cámara</h3>
+                <p class="text-slate-300 mb-4">${error.message || 'No se pudo acceder a la cámara.'}</p>
+                
+                <div class="text-left text-sm text-slate-400 bg-black/30 p-4 rounded-lg mb-6">
+                    <p class="font-semibold mb-2">Solución de problemas:</p>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>Verifica los permisos de cámara</li>
+                        <li>Asegúrate de que la cámara no esté en uso</li>
+                        <li>Prueba con el navegador Chrome</li>
+                        <li>Reinicia la aplicación</li>
+                    </ul>
+                </div>
+                
+                <button onclick="location.reload()" 
+                        class="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105">
+                    🔄 Recargar Página
+                </button>
+            </div>
+        `;
+    }
+}
+
+// ========== INICIALIZACIÓN ==========
+window.onload = async () => {
+    debugLog('Página cargada - Inicializando...', 'info');
+    
+    // Verificar sesión
+    try {
+        const sessionData = localStorage.getItem('userSession');
+        if (!sessionData) {
+            debugLog('No hay sesión activa', 'error');
+            alert('Debes iniciar sesión primero.');
+            location.replace('login.html');
+            return;
+        }
+        
+        const user = JSON.parse(sessionData);
+        debugLog(`Usuario autenticado: ${user.nombre} (${user.rol})`, 'success');
+        
+        // Roles permitidos
+        const rolesPermitidos = ['Director', 'Docente', 'Admin', 'Personal', 'Monitor', 'Supervisor'];
+        if (!rolesPermitidos.includes(user.rol)) {
+            debugLog(`Rol no autorizado: ${user.rol}`, 'error');
+            alert(`Acceso denegado. Rol no autorizado: ${user.rol}`);
+            location.replace('index.html');
+            return;
+        }
+        
+        // Actualizar UI con info de usuario
+        document.getElementById('currentMode').textContent = user.rol;
+        
+        // Test de conexión inicial
+        setTimeout(testConnection, 500);
+        
+        // Iniciar escáner
+        await iniciarEscaneo();
+        
+    } catch (error) {
+        debugLog(`Error en inicialización: ${error.message}`, 'error');
+        localStorage.removeItem('userSession');
+        location.replace('login.html');
+    }
+};
+
+// ========== FUNCIONES DE DESARROLLO ==========
+window.debugScan = function(email = 'test@example.com') {
+    if (!email.includes('@')) {
+        email = `${email}@test.com`;
+    }
+    debugLog(`Scan de prueba: ${email}`, 'warning');
+    onScanSuccess(email);
+};
+
+window.showSession = function() {
+    try {
+        const session = localStorage.getItem('userSession');
+        if (session) {
+            const user = JSON.parse(session);
+            console.table(user);
+            return user;
+        } else {
+            console.warn('No hay sesión activa');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error leyendo sesión:', error);
+        return null;
+    }
+};
+
+window.resetScanner = function() {
+    if (html5QrCode) {
+        html5QrCode.stop();
+        html5QrCode.clear();
+    }
+    reiniciarEscaneo();
+};
+
+// ========== MANEJO DE EVENTOS ==========
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 'd') {
+        e.preventDefault();
+        toggleDebugPanel();
+    }
+    if (e.key === 'Escape') {
+        reiniciarEscaneo();
+    }
+});
+
+// ========== ESTILOS DINÁMICOS ==========
+const style = document.createElement('style');
+style.textContent = `
+    .animate-pulse-once {
+        animation: pulse-once 0.5s ease-in-out;
+    }
+    @keyframes pulse-once {
+        0% { opacity: 0.7; }
+        50% { opacity: 1; }
+        100% { opacity: 0.7; }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.8s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    ::-webkit-scrollbar {
+        width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: rgba(59, 130, 246, 0.5);
+        border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(59, 130, 246, 0.7);
+    }
+`;
+document.head.appendChild(style);
+</script>
+</body>
+</html>

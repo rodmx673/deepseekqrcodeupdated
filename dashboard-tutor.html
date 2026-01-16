@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Tutor - QR Gate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+<nav class="bg-blue-600 p-4 text-white shadow-lg">
+    <div class="max-w-4xl mx-auto flex justify-between items-center">
+        <h1 class="font-black italic uppercase tracking-tighter text-xl">QR Gate Skool</h1>
+        <button onclick="logout()" class="bg-blue-700 px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-500 transition">Cerrar Sesión</button>
+    </div>
+</nav>
+<main class="max-w-4xl mx-auto p-6">
+    <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div><h2 class="text-2xl font-bold text-slate-800">Bienvenido(a), <span id="nombreTutor">...</span></h2><p class="text-slate-500 text-sm">Gestiona y monitorea a tus hijos.</p></div>
+        <button onclick="mostrarModal()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-sm">+ Vincular Alumno (QR ID)</button>
+    </div>
+    <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
+        <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center"><h3 class="font-black text-slate-700 uppercase text-xs tracking-widest">Actividad de hoy</h3><span class="text-[10px] bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-bold">EN VIVO</span></div>
+        <div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-100 text-slate-500 text-[10px] uppercase font-bold"><tr><th class="p-4">Alumno</th><th class="p-4">Evento</th><th class="p-4">Hora</th></tr></thead><tbody id="tablaHijos" class="divide-y divide-slate-50"><tr><td colspan="3" class="p-10 text-center text-slate-400">Cargando datos...</td></tr></tbody></table></div>
+    </div>
+</main>
+<div id="modalVinculo" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"><div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl">
+    <h3 class="text-xl font-bold text-slate-800 mb-2">Vincular Alumno</h3><p class="text-slate-500 text-sm mb-6">Ingresa el correo electrónico del alumno.</p>
+    <input type="text" id="alumnoID" placeholder="Ej: alumno@correo.com" class="w-full p-4 bg-slate-100 border-none rounded-2xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none font-mono text-center text-lg">
+    <div class="flex gap-3"><button onclick="cerrarModal()" class="flex-1 py-3 text-slate-400 font-bold hover:bg-slate-50 rounded-2xl transition">Cancelar</button><button onclick="procesarVinculo()" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-2xl shadow-blue-200 shadow-lg hover:bg-blue-700 transition">Vincular</button></div>
+</div></div>
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbymZkiBvIebJJ8qIhW9J5YpEL_kVWqJo3UwaLbqQdav-xXMHbH2ahWqaLg3xtw2PF7P/exec";
+window.onload = () => {
+    const s = JSON.parse(localStorage.getItem('userSession'));
+    if (!s || s.rol !== 'Tutor') { alert("Acceso denegado. Debes ser Tutor."); location.replace('login.html'); }
+    document.getElementById('nombreTutor').textContent = s.nombre;
+    cargarAsistencias(s.email);
+};
+async function cargarAsistencias(email){
+    try {
+        const res = await fetch(`${SCRIPT_URL}?action=getHijosInfo&email=${encodeURIComponent(email)}`, {method:'GET',mode:'cors'});
+        const data = await res.json();
+        const tbody = document.getElementById('tablaHijos');
+        tbody.innerHTML = '';
+        if (data.status === 'success' && data.eventos?.length) {
+            data.eventos.forEach(reg => {
+                const color = reg.tipo.toLowerCase() === 'entrada' ? 'text-emerald-500' : 'text-orange-500';
+                tbody.insertAdjacentHTML('beforeend', `<tr class="hover:bg-slate-50"><td class="p-4 font-bold text-slate-700 text-sm">${reg.nombreHijo}</td><td class="p-4 font-black ${color} text-xs">${reg.tipo.toUpperCase()}</td><td class="p-4 text-slate-400 font-mono text-[10px]">${reg.hora}</td></tr>`);
+            });
+        } else {
+            tbody.innerHTML = `<tr><td colspan="3" class="p-10 text-center text-slate-400 italic">No hay alumnos vinculados o no hay actividad hoy.</td></tr>`;
+        }
+    } catch (e) {
+        console.error(e);
+        document.getElementById('tablaHijos').innerHTML = `<tr><td colspan="3" class="p-10 text-center text-red-600 font-bold">Error de conexión.</td></tr>`;
+    }
+}
+function mostrarModal(){ document.getElementById('modalVinculo').classList.remove('hidden'); }
+function cerrarModal(){ document.getElementById('modalVinculo').classList.add('hidden'); }
+async function procesarVinculo(){
+    const idAlum = document.getElementById('alumnoID').value.trim().toLowerCase();
+    const email = JSON.parse(localStorage.getItem('userSession')).email;
+    if (!idAlum) return alert("Escribe el correo del alumno");
+    try {
+        const res = await fetch(`${SCRIPT_URL}?action=vincularAlumno&id=${encodeURIComponent(idAlum)}&tutorEmail=${encodeURIComponent(email)}`, {method:'GET',mode:'cors'});
+        const data = await res.json();
+        if (data.status === 'success') {
+            alert('¡Vinculación exitosa!');
+            cerrarModal(); document.getElementById('alumnoID').value = '';
+            cargarAsistencias(email);
+        } else {
+            alert('Error: ' + (data.message || 'No se pudo vincular'));
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Hubo un problema al conectar con el servidor.');
+    }
+}
+function logout(){ localStorage.removeItem('userSession'); location.replace('login.html'); }
+</script>
+</body>
+</html>
