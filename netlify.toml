@@ -1,8 +1,3 @@
 ﻿[build]
-  publish = 'frontend'
-  command = ''
-
-[[redirects]]
-  from = '/*'
-  to = '/index.html'
-  status = 200
+publish = "frontend"
+command = ""
