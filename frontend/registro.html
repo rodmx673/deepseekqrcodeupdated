@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - QR Gate Skool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
+<div class="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-md">
+    <div class="text-center mb-6">
+        <h1 class="text-3xl font-black text-blue-600 italic">QR GATE</h1>
+        <p class="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Crear Nueva Cuenta</p>
+    </div>
+    <div class="space-y-3">
+        <div>
+            <label class="block text-[10px] font-black text-slate-500 mb-1 ml-1 uppercase">¿Quién eres?</label>
+            <select id="rol" onchange="toggleFields()" class="w-full p-3.5 bg-slate-100 rounded-2xl border-none focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-700">
+                <option value="Alumno">Alumno</option>
+                <option value="Tutor">Tutor / Padre de Familia</option>
+                <option value="Docente">Docente</option>
+                <option value="Director">Director / Admin</option>
+            </select>
+        </div>
+        <input type="text" id="nombre" placeholder="Nombre completo" class="w-full p-3.5 bg-slate-100 rounded-2xl border-none focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-700">
+        <input type="email" id="email" placeholder="Correo electrónico" class="w-full p-3.5 bg-slate-100 rounded-2xl border-none focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-700">
+        <input type="password" id="password" placeholder="Contraseña" class="w-full p-3.5 bg-slate-100 rounded-2xl border-none focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-700">
+        <div id="divDirectorID"><input type="text" id="idDirector" placeholder="ID de Escuela (Ej: ESC-8660)" class="w-full p-3.5 bg-slate-100 rounded-2xl border-none focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-700 uppercase"></div>
+        <button onclick="registrar()" id="btnRegistrar" class="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg hover:bg-blue-700 transition-all mt-4 active:scale-95 transform">REGISTRARSE AHORA</button>
+    </div>
+    <div class="mt-6 text-center"><p class="text-xs text-slate-500 font-medium">¿Ya tienes cuenta? <a href="login.html" class="text-blue-600 font-black hover:underline">Inicia sesión</a></p></div>
+</div>
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbymZkiBvIebJJ8qIhW9J5YpEL_kVWqJo3UwaLbqQdav-xXMHbH2ahWqaLg3xtw2PF7P/exec";
+function toggleFields(){
+    document.getElementById('divDirectorID').style.display = (document.getElementById('rol').value === "Alumno") ? "block" : "none";
+}
+async function registrar(){
+    const btn = document.getElementById('btnRegistrar');
+    const rol = document.getElementById('rol').value;
+    const nom = document.getElementById('nombre').value.trim();
+    const email = document.getElementById('email').value.trim().toLowerCase();
+    const pass = document.getElementById('password').value.trim();
+    const idEsc = document.getElementById('idDirector').value.trim().toUpperCase() || "N/A";
+    if (!nom || !email || !pass) return alert("Completa todos los campos");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return alert("Correo inválido");
+    if (pass.length < 6) return alert("Contraseña mínima 6 caracteres");
+    btn.disabled = true; btn.innerText = "PROCESANDO...";
+    const params = new URLSearchParams({action:'register',rol,nombre:nom,email,password:pass,idDirectorIngresado:idEsc});
+    try {
+        const res = await fetch(`${SCRIPT_URL}?${params}`, {method:'GET',mode:'cors'});
+        const data = await res.json();
+        if (data.status === "success") {
+            alert("✅ Registro exitoso. Serás redirigido...");
+            location.replace("login.html");
+        } else {
+            alert("❌ " + (data.message || "Error al registrar"));
+            resetBtn(btn);
+        }
+    } catch (e) {
+        console.error(e);
+        alert("⚠️ No se pudo conectar con el servidor. Inténtalo de nuevo.");
+        resetBtn(btn);
+    }
+    function resetBtn(b){ b.disabled = false; b.innerText = "REGISTRARSE AHORA"; }
+}
+toggleFields();
+</script>
+</body>
+</html>

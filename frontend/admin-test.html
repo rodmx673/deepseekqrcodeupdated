@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Test - QR Gate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-8 bg-gray-100">
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow">
+        <h1 class="text-2xl font-bold mb-6">🛠️ Panel de Testing QR Gate</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Sesión Actual -->
+            <div class="border p-4 rounded">
+                <h2 class="font-bold mb-2">📊 Sesión Actual</h2>
+                <div id="sessionInfo" class="mb-3 p-2 bg-gray-50 rounded"></div>
+                <button onclick="clearSession()" class="bg-red-500 text-white px-4 py-2 rounded">🧹 Limpiar Sesión</button>
+            </div>
+            
+            <!-- Auto Login -->
+            <div class="border p-4 rounded">
+                <h2 class="font-bold mb-2">🔐 Auto Login</h2>
+                <button onclick="loginAs('director')" class="block w-full text-left p-2 mb-2 bg-blue-100 hover:bg-blue-200 rounded">👨‍🏫 Director</button>
+                <button onclick="loginAs('tutor')" class="block w-full text-left p-2 mb-2 bg-green-100 hover:bg-green-200 rounded">👨‍👦 Tutor</button>
+                <button onclick="loginAs('alumno')" class="block w-full text-left p-2 mb-2 bg-yellow-100 hover:bg-yellow-200 rounded">👨‍🎓 Alumno</button>
+                <button onclick="loginAs('docente')" class="block w-full text-left p-2 mb-2 bg-purple-100 hover:bg-purple-200 rounded">👩‍🏫 Docente</button>
+            </div>
+            
+            <!-- Navegación -->
+            <div class="border p-4 rounded">
+                <h2 class="font-bold mb-2">📍 Navegación Rápida</h2>
+                <a href="index.html" class="block p-2 mb-2 bg-gray-100 hover:bg-gray-200 rounded">🏠 Inicio</a>
+                <a href="login.html" class="block p-2 mb-2 bg-gray-100 hover:bg-gray-200 rounded">🔐 Login Manual</a>
+                <a href="registro.html" class="block p-2 mb-2 bg-gray-100 hover:bg-gray-200 rounded">📝 Registro</a>
+            </div>
+            
+            <!-- Dashboards -->
+            <div class="border p-4 rounded">
+                <h2 class="font-bold mb-2">📊 Dashboards</h2>
+                <a href="monitor-director.html" class="block p-2 mb-2 bg-blue-50 hover:bg-blue-100 rounded">📈 Monitor Director</a>
+                <a href="dashboard-tutor.html" class="block p-2 mb-2 bg-green-50 hover:bg-green-100 rounded">👨‍👦 Dashboard Tutor</a>
+                <a href="dashboard-alumno.html" class="block p-2 mb-2 bg-yellow-50 hover:bg-yellow-100 rounded">👨‍🎓 Dashboard Alumno</a>
+                <a href="dashboard-docente.html" class="block p-2 mb-2 bg-purple-50 hover:bg-purple-100 rounded">👩‍🏫 Dashboard Docente</a>
+            </div>
+        </div>
+        
+        <!-- Usuarios de prueba -->
+        <div class="mt-6 border-t pt-4">
+            <h2 class="font-bold mb-2">👥 Usuarios de Prueba</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-blue-50 p-3 rounded">
+                    <h3 class="font-bold">👨‍🏫 Director</h3>
+                    <p class="text-sm">Email: <code>newcoordinatorC</code></p>
+                    <p class="text-sm">Password: <code>mexico86</code></p>
+                </div>
+                <div class="bg-green-50 p-3 rounded">
+                    <h3 class="font-bold">👨‍👦 Tutor</h3>
+                    <p class="text-sm">Email: <code>newtutor03@gmail.com</code></p>
+                    <p class="text-sm">Password: <code>mexico86</code></p>
+                </div>
+                <div class="bg-yellow-50 p-3 rounded">
+                    <h3 class="font-bold">👨‍🎓 Alumno</h3>
+                    <p class="text-sm">Email: <code>ramonv@gmail.com</code></p>
+                    <p class="text-sm">Password: <code>mexico86</code></p>
+                </div>
+                <div class="bg-purple-50 p-3 rounded">
+                    <h3 class="font-bold">👩‍🏫 Docente</h3>
+                    <p class="text-sm">Email: <code>[crear uno]</code></p>
+                    <p class="text-sm">Password: <code>test123</code></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Mostrar sesión actual
+    function updateSessionInfo() {
+        const session = localStorage.getItem('userSession');
+        const div = document.getElementById('sessionInfo');
+        
+        if (session) {
+            try {
+                const user = JSON.parse(session);
+                div.innerHTML = `
+                    <strong>Usuario:</strong> ${user.nombre}<br>
+                    <strong>Email:</strong> ${user.email}<br>
+                    <strong>Rol:</strong> ${user.rol}<br>
+                    <strong>Escuela:</strong> ${user.idEscuela || 'N/A'}
+                `;
+                div.className = 'mb-3 p-2 bg-green-50 rounded';
+            } catch {
+                div.innerHTML = '⚠️ Sesión inválida';
+                div.className = 'mb-3 p-2 bg-red-50 rounded';
+            }
+        } else {
+            div.innerHTML = '🔒 No hay sesión activa';
+            div.className = 'mb-3 p-2 bg-gray-100 rounded';
+        }
+    }
+    
+    // Limpiar sesión
+    function clearSession() {
+        localStorage.removeItem('userSession');
+        updateSessionInfo();
+        alert('Sesión limpiada');
+    }
+    
+    // Auto login
+    function loginAs(role) {
+        clearSession();
+        
+        const users = {
+            director: {email: 'newcoordinatorC', password: 'mexico86'},
+            tutor: {email: 'newtutor03@gmail.com', password: 'mexico86'},
+            alumno: {email: 'ramonv@gmail.com', password: 'mexico86'},
+            docente: {email: 'testdocente@test.com', password: 'test123'}
+        };
+        
+        const user = users[role];
+        if (user) {
+            // Simular login
+            const fakeSession = {
+                email: user.email,
+                rol: role.charAt(0).toUpperCase() + role.slice(1),
+                nombre: 'Usuario de Prueba ' + role,
+                idEscuela: 'ESC-8660'
+            };
+            
+            localStorage.setItem('userSession', JSON.stringify(fakeSession));
+            updateSessionInfo();
+            
+            setTimeout(() => {
+                if (confirm(`Sesión iniciada como ${fakeSession.rol}\n¿Ir al dashboard?`)) {
+                    const pages = {
+                        director: 'monitor-director.html',
+                        tutor: 'dashboard-tutor.html',
+                        alumno: 'dashboard-alumno.html',
+                        docente: 'dashboard-docente.html'
+                    };
+                    location.href = pages[role];
+                }
+            }, 300);
+        }
+    }
+    
+    // Inicializar
+    updateSessionInfo();
+    </script>
+</body>
+</html>
