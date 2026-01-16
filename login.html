@@ -1,9 +1,4 @@
-﻿# Hacer backup primero
-Copy-Item login.html login.html.backup -Force
-
-# Crear nuevo login.html con formulario de registro integrado
-@"
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -51,7 +46,6 @@ Copy-Item login.html login.html.backup -Force
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
 
-        /* Panel izquierdo - Branding */
         .brand-panel {
             flex: 1;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
@@ -126,7 +120,6 @@ Copy-Item login.html login.html.backup -Force
             font-size: 18px;
         }
 
-        /* Panel derecho - Forms */
         .form-panel {
             flex: 1.2;
             padding: 60px;
@@ -301,7 +294,23 @@ Copy-Item login.html login.html.backup -Force
             border-top: 1px solid #e2e8f0;
         }
 
-        /* Responsive */
+        /* ESTILOS PARA NORMALIZACION */
+        #regNombre, #regSchoolId {
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        #regNombre.formatted {
+            background-color: rgba(16, 185, 129, 0.05);
+            border-color: #10b981;
+        }
+
+        #regNombre.error {
+            border-color: #ef4444;
+            background-color: rgba(239, 68, 68, 0.05);
+        }
+
         @media (max-width: 968px) {
             .app-container {
                 flex-direction: column;
@@ -336,7 +345,6 @@ Copy-Item login.html login.html.backup -Force
 </head>
 <body>
     <div class="app-container">
-        <!-- Panel izquierdo - Branding -->
         <div class="brand-panel">
             <div class="logo">
                 <div class="logo-icon">
@@ -386,7 +394,6 @@ Copy-Item login.html login.html.backup -Force
             </div>
         </div>
         
-        <!-- Panel derecho - Forms -->
         <div class="form-panel">
             <div class="form-tabs">
                 <button class="tab-btn active" onclick="showForm('login')">
@@ -397,7 +404,6 @@ Copy-Item login.html login.html.backup -Force
                 </button>
             </div>
             
-            <!-- Formulario de Login -->
             <div id="loginForm" class="form-container" style="display: block;">
                 <h2 class="form-title">Bienvenido de nuevo</h2>
                 <p class="form-subtitle">Ingresa tus credenciales para acceder al sistema</p>
@@ -432,7 +438,6 @@ Copy-Item login.html login.html.backup -Force
                 </div>
             </div>
             
-            <!-- Formulario de Registro -->
             <div id="registerForm" class="form-container" style="display: none;">
                 <h2 class="form-title">Crear nueva cuenta</h2>
                 <p class="form-subtitle">Completa todos los campos para registrar un usuario</p>
@@ -442,7 +447,9 @@ Copy-Item login.html login.html.backup -Force
                         <label class="form-label" for="regNombre">
                             Nombre completo <span class="required">*</span>
                         </label>
-                        <input type="text" id="regNombre" class="form-input" placeholder="Juan Pérez García" required>
+                        <input type="text" id="regNombre" class="form-input" placeholder="JUAN PEREZ GARCIA" required>
+                        <div class="form-hint">Se convertirá automáticamente a MAYÚSCULAS</div>
+                        <div id="nombreError" class="error-message"></div>
                     </div>
                     
                     <div class="form-group">
@@ -465,14 +472,13 @@ Copy-Item login.html login.html.backup -Force
                         </select>
                     </div>
                     
-                    <!-- NUEVO CAMPO: ID de Escuela -->
                     <div class="form-group">
                         <label class="form-label" for="regSchoolId">
                             ID de Escuela <span id="schoolIdRequired" class="required">*</span>
                         </label>
                         <input type="text" id="regSchoolId" class="form-input" placeholder="ESC-8660">
                         <div class="form-hint" id="schoolIdHint">
-                            Formato: ESC-XXXX (4 dígitos) - Obligatorio para: Alumnos, Docentes, Directores
+                            Formato: ESC-XXXX (4 dígitos) - Obligatorio para Alumnos, Docentes, Directores
                         </div>
                         <div id="schoolIdError" class="error-message"></div>
                     </div>
@@ -518,169 +524,196 @@ Copy-Item login.html login.html.backup -Force
     </div>
 
     <script>
-        // Cambiar entre formularios
         function showForm(formType) {
-            // Actualizar tabs
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
+            const tabs = document.querySelectorAll(".tab-btn");
+            tabs.forEach(btn => btn.classList.remove("active"));
             
-            // Mostrar/ocultar formularios
-            document.getElementById('loginForm').style.display = formType === 'login' ? 'block' : 'none';
-            document.getElementById('registerForm').style.display = formType === 'register' ? 'block' : 'none';
+            if (tabs.length >= 2) {
+                const activeIndex = formType === "login" ? 0 : 1;
+                tabs[activeIndex].classList.add("active");
+            }
             
-            // Resetear validaciones
+            document.getElementById("loginForm").style.display = formType === "login" ? "block" : "none";
+            document.getElementById("registerForm").style.display = formType === "register" ? "block" : "none";
+            
             resetValidations();
+            
+            if (formType === "register") {
+                setTimeout(inicializarFormularioRegistro, 100);
+            }
         }
         
         function resetValidations() {
-            document.querySelectorAll('.error-message').forEach(el => {
-                el.classList.remove('show');
-                el.textContent = '';
+            document.querySelectorAll(".error-message").forEach(el => {
+                el.classList.remove("show");
             });
-            document.querySelectorAll('.form-input').forEach(el => {
-                el.classList.remove('error');
+            document.querySelectorAll(".form-input").forEach(el => {
+                el.classList.remove("error");
             });
         }
         
-        // Configurar campo ID de escuela según rol
         function configurarCampoEscuela() {
-            const rol = document.getElementById('regRol').value;
-            const schoolIdInput = document.getElementById('regSchoolId');
-            const schoolIdHint = document.getElementById('schoolIdHint');
-            const schoolIdRequired = document.getElementById('schoolIdRequired');
+            const rol = document.getElementById("regRol").value;
+            const schoolIdInput = document.getElementById("regSchoolId");
+            const schoolIdHint = document.getElementById("schoolIdHint");
+            const schoolIdRequired = document.getElementById("schoolIdRequired");
             
-            if (rol === 'Tutor') {
+            if (rol === "Tutor") {
                 schoolIdInput.required = false;
-                schoolIdInput.placeholder = 'ESC-8660 (opcional)';
-                schoolIdHint.innerHTML = 'Formato: ESC-XXXX (4 dígitos) - <span style="color: var(--gray);">Opcional para tutores</span>';
-                schoolIdRequired.style.display = 'none';
-                schoolIdInput.style.opacity = '0.8';
-            } else if (rol === 'Alumno' || rol === 'Docente' || rol === 'Director') {
+                schoolIdInput.placeholder = "ESC-8660 (opcional)";
+                schoolIdHint.innerHTML = "Formato: ESC-XXXX (4 dígitos) - Opcional para tutores";
+                schoolIdRequired.style.display = "none";
+            } else if (rol === "Alumno" || rol === "Docente" || rol === "Director") {
                 schoolIdInput.required = true;
-                schoolIdInput.placeholder = 'ESC-8660 *';
-                schoolIdHint.innerHTML = 'Formato: ESC-XXXX (4 dígitos) - <span style="color: var(--danger); font-weight: 600;">Obligatorio para: ' + rol + '</span>';
-                schoolIdRequired.style.display = 'inline';
-                schoolIdInput.style.opacity = '1';
+                schoolIdInput.placeholder = "ESC-8660 *";
+                schoolIdHint.innerHTML = "Formato: ESC-XXXX (4 dígitos) - Obligatorio para: " + rol;
+                schoolIdRequired.style.display = "inline";
             } else {
                 schoolIdInput.required = false;
-                schoolIdInput.placeholder = 'Selecciona un rol primero';
-                schoolIdHint.innerHTML = 'Formato: ESC-XXXX (4 dígitos) - <span style="color: var(--gray);">Selecciona un rol primero</span>';
-                schoolIdRequired.style.display = 'none';
-                schoolIdInput.style.opacity = '0.6';
+                schoolIdInput.placeholder = "Selecciona un rol primero";
+                schoolIdHint.innerHTML = "Formato: ESC-XXXX (4 dígitos) - Selecciona un rol primero";
+                schoolIdRequired.style.display = "none";
             }
         }
         
-        // Validación en tiempo real del ID de escuela
-        document.getElementById('regSchoolId').addEventListener('input', function() {
-            const value = this.value.toUpperCase();
-            const errorElement = document.getElementById('schoolIdError');
-            
-            // Auto-formatear a mayúsculas
-            this.value = value;
-            
-            if (value && !/^ESC-\d{0,4}$/.test(value)) {
-                this.classList.add('error');
-                errorElement.textContent = 'Formato: ESC-XXXX (ej: ESC-8660)';
-                errorElement.classList.add('show');
-            } else if (value && /^ESC-\d{4}$/.test(value)) {
-                this.classList.remove('error');
-                errorElement.classList.remove('show');
-            } else {
-                this.classList.remove('error');
-                errorElement.classList.remove('show');
+        function normalizarTexto(texto) {
+            if (!texto) return "";
+            return texto.toUpperCase().trim();
+        }
+        
+        function validarNombreCompleto(nombre) {
+            if (!nombre || nombre.trim().length === 0) return false;
+            const palabras = nombre.split(" ").filter(p => p.length >= 2);
+            return palabras.length >= 2;
+        }
+        
+        function inicializarFormularioRegistro() {
+            const nombreInput = document.getElementById("regNombre");
+            if (nombreInput) {
+                nombreInput.addEventListener("input", function() {
+                    this.value = this.value.toUpperCase();
+                    validarNombreEnTiempoReal(this);
+                });
+                
+                nombreInput.addEventListener("blur", function() {
+                    this.value = normalizarTexto(this.value);
+                    validarNombreEnTiempoReal(this);
+                });
             }
+            
+            const schoolIdInput = document.getElementById("regSchoolId");
+            if (schoolIdInput) {
+                schoolIdInput.addEventListener("input", function() {
+                    this.value = this.value.toUpperCase();
+                });
+            }
+            
+            configurarCampoEscuela();
+            
+            const rolSelect = document.getElementById("regRol");
+            if (rolSelect) {
+                rolSelect.addEventListener("change", configurarCampoEscuela);
+            }
+        }
+        
+        function validarNombreEnTiempoReal(input) {
+            const valor = input.value.trim();
+            const errorElement = document.getElementById("nombreError");
+            
+            if (!valor) {
+                if (errorElement) errorElement.classList.remove("show");
+                input.classList.remove("error", "formatted");
+                return;
+            }
+            
+            if (!validarNombreCompleto(valor)) {
+                if (errorElement) {
+                    errorElement.textContent = "Ingresa nombre y apellido completo (ej: MARIA GARCIA LOPEZ)";
+                    errorElement.classList.add("show");
+                }
+                input.classList.add("error");
+                input.classList.remove("formatted");
+            } else {
+                if (errorElement) errorElement.classList.remove("show");
+                input.classList.remove("error");
+                input.classList.add("formatted");
+            }
+        }
+        
+        document.getElementById("loginFormElement").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const email = document.getElementById("loginEmail").value;
+            const password = document.getElementById("loginPassword").value;
+            
+            if (!email || !password) {
+                alert("Por favor, ingresa email y contraseña");
+                return;
+            }
+            
+            alert("Iniciando sesión... (simulación)");
         });
         
-        // Manejar envío del formulario de registro
-        document.getElementById('registerFormElement').addEventListener('submit', function(e) {
+        document.getElementById("registerFormElement").addEventListener("submit", function(e) {
             e.preventDefault();
             resetValidations();
             
-            const nombre = document.getElementById('regNombre').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            const rol = document.getElementById('regRol').value;
-            const schoolId = document.getElementById('regSchoolId').value.trim();
-            const password = document.getElementById('regPassword').value;
-            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            const nombre = document.getElementById("regNombre").value.trim();
+            const email = document.getElementById("regEmail").value.trim();
+            const rol = document.getElementById("regRol").value;
+            const schoolId = document.getElementById("regSchoolId").value.trim();
+            const password = document.getElementById("regPassword").value;
+            const confirmPassword = document.getElementById("regConfirmPassword").value;
             
             let isValid = true;
             
-            // Validar campos obligatorios
-            if (!nombre || !email || !rol || !password || !confirmPassword) {
-                alert('❌ Todos los campos marcados con * son obligatorios');
+            if (!validarNombreCompleto(nombre)) {
+                document.getElementById("nombreError").textContent = "Ingresa nombre y apellido completo";
+                document.getElementById("nombreError").classList.add("show");
+                document.getElementById("regNombre").classList.add("error");
                 isValid = false;
             }
             
-            // Validar ID de escuela según el rol
-            if (rol !== 'Tutor') {
+            if (rol !== "Tutor") {
                 const schoolIdRegex = /^ESC-\d{4}$/;
                 if (!schoolIdRegex.test(schoolId)) {
-                    document.getElementById('schoolIdError').textContent = 
-                        '❌ Formato de ID de escuela inválido. Use: ESC-XXXX (ej: ESC-8660)';
-                    document.getElementById('schoolIdError').classList.add('show');
-                    document.getElementById('regSchoolId').classList.add('error');
+                    document.getElementById("schoolIdError").textContent = "Formato: ESC-XXXX (ej: ESC-8660)";
+                    document.getElementById("schoolIdError").classList.add("show");
+                    document.getElementById("regSchoolId").classList.add("error");
                     isValid = false;
                 }
             }
             
-            // Validar contraseña
             if (password.length < 6) {
-                document.getElementById('passwordError').textContent = 
-                    '❌ La contraseña debe tener al menos 6 caracteres';
-                document.getElementById('passwordError').classList.add('show');
+                document.getElementById("passwordError").textContent = "La contraseña debe tener al menos 6 caracteres";
+                document.getElementById("passwordError").classList.add("show");
                 isValid = false;
             }
             
             if (password !== confirmPassword) {
-                document.getElementById('passwordError').textContent = 
-                    '❌ Las contraseñas no coinciden';
-                document.getElementById('passwordError').classList.add('show');
+                document.getElementById("passwordError").textContent = "Las contraseñas no coinciden";
+                document.getElementById("passwordError").classList.add("show");
                 isValid = false;
             }
             
-            // Validar email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                alert('❌ Formato de email inválido');
+                alert("Formato de email inválido");
                 isValid = false;
             }
             
             if (isValid) {
-                // Simular envío exitoso
-                alert(`✅ ${rol} "${nombre}" registrado exitosamente!\n🏫 ID Escuela: ${schoolId || 'N/A (Tutor)'}`);
-                
-                // Resetear formulario
+                alert(rol + ' "' + nombre + '" registrado exitosamente!\nID Escuela: ' + (schoolId || "N/A (Tutor)"));
                 this.reset();
-                configurarCampoEscuela();
-                
-                // Cambiar a login
-                showForm('login');
+                showForm("login");
             }
         });
         
-        // Manejar envío del formulario de login
-        document.getElementById('loginFormElement').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!email || !password) {
-                alert('❌ Por favor, ingresa email y contraseña');
-                return;
+        document.addEventListener("DOMContentLoaded", function() {
+            const rolSelect = document.getElementById("regRol");
+            if (rolSelect) {
+                rolSelect.addEventListener("change", configurarCampoEscuela);
             }
-            
-            // Simular login (reemplazar con llamada real a GAS)
-            alert('🔐 Iniciando sesión...\n\n(En producción esto se conecta a Google Apps Script)');
-        });
-        
-        // Inicializar eventos
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('regRol').addEventListener('change', configurarCampoEscuela);
-            configurarCampoEscuela();
         });
     </script>
 </body>
 </html>
-"@ | Out-File -FilePath "login.html" -Encoding UTF8 -Force
