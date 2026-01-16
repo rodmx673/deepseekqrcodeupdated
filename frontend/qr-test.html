@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Prueba de QR Local</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .qr-test { margin: 20px 0; padding: 20px; border: 2px dashed #ccc; }
+        .test-button { background: #4CAF50; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Prueba Local de Escáner QR</h1>
+        
+        <div class="qr-test">
+            <h3>QR de Prueba 1: Texto simple</h3>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Hola%20Mundo%20QR%20Gate%20Skool" 
+                 alt="QR de prueba">
+            <p>Contenido: "Hola Mundo QR Gate Skool"</p>
+        </div>
+        
+        <div class="qr-test">
+            <h3>QR de Prueba 2: Email de test</h3>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=test%40example.com" 
+                 alt="QR de prueba email">
+            <p>Contenido: "test@example.com"</p>
+        </div>
+        
+        <div class="qr-test">
+            <h3>Instrucciones:</h3>
+            <ol>
+                <li>Abre <a href="scanner.html">scanner.html</a></li>
+                <li>Permite el acceso a la cámara</li>
+                <li>Escanea uno de estos códigos QR</li>
+                <li>Verifica que detecte el texto correcto</li>
+            </ol>
+            
+            <button class="test-button" onclick="window.open('scanner.html', '_blank')">
+                🔗 Abrir Escáner QR
+            </button>
+        </div>
+    </div>
+</body>
+</html>
